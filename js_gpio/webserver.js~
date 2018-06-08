@@ -1,0 +1,68 @@
+var http = require("http").createServer(handler); // require http server, and create server with function handler
+var fs = require("fs"); // requires filesystem module
+var io = require("socket.io")(http) // require socket.io and pass the http server object
+
+// Add the code to handle the GPIO --------------------------------------
+var Gpio = require("onoff").Gpio; //include onoff to interact with the GPIO
+var LED = new Gpio(4, "out"); // out to led in GPIO port 4
+var pushButton = new Gpio(17, "in", "button_press"); // it is an input, and both button presses and releases should be handled
+// --------------------------------------------------------------------------------------------
+
+
+http.listen(8080); // listen to port 8080
+
+function handler (req, res){
+	// create server
+	fs.readFile(__dirname + "/public/index.html", 
+									function(err, data){
+										// read file index.html in public folder
+										if (err) {
+											res. writeHead(404, {"Content-Type":"text/html"}); // display 404 error
+											return res.end("404 Not Found");
+										}
+										// if no error
+										res.writeHead(200, {"Content-Type":"text/html"}); // write html
+										res.write(data);
+										return res.end();
+									}); //end function} end readFile)
+};
+
+io.sockets.on("connection", 
+		function(socket){
+			// WebSocket Connection
+			var lightvalue = 0; // strict variable for current light status
+			pushButton.watch(function(err, value){
+															// watch for hardware interrupts
+															if (err){
+																console.error("Error!", err);
+																return;
+															}
+															lightvalue = value;
+															socket.emit("light", lightvalue);
+														}
+			);
+															
+			socket.on("light",
+					function(data){
+						// get light switch status from client
+						lightvalue = data;
+						if (lightvalue != LED.readSync()){
+							// turn LED on or off
+							LED.writeSync(lightvalue);
+						}
+					});
+			}
+	);
+	
+	
+// GPIO final bit -------------------------------------------------------------
+process.on("SIGINT", 
+		function(){
+			// on ctrl+c
+			LED.writeSync(0);
+			LED.unexport();
+			pushButton.unexport();
+			process.exit();
+		}
+);
+			

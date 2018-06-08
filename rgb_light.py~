@@ -1,0 +1,175 @@
+# rgb_light.py
+
+import RPi.GPIO as GPIO
+from tkinter import *
+import time
+import random
+
+class LightApp:
+	"""Application that controls a single RGB light on breadboard"""
+	
+	def __init__(self, master, r_pin, g_pin, b_pin):
+		"""Takes in pin numbers and initializes app
+		Fields:
+				pwmRed/Green/Blue 	--> the intensity of each color
+				frame         							--> the window for the GUI"""
+		
+		# Initialize lights
+		GPIO.setmode(GPIO.BCM)
+		GPIO.setup(r_pin, GPIO.OUT)
+		GPIO.setup(g_pin, GPIO.OUT)
+		GPIO.setup(b_pin, GPIO.OUT)
+		
+		# BUTTON
+		GPIO.setup(16,  GPIO.IN, pull_up_down=GPIO.PUD_UP)
+		GPIO.add_event_detect(16, GPIO.FALLING, callback=self.random_button, 
+					bouncetime=200) # bouncetime eliminates jitter
+		
+		# Light Fields
+		self.pwmRed = GPIO.PWM(r_pin, 500)
+		self.pwmGreen = GPIO.PWM(g_pin, 500)
+		self.pwmBlue = GPIO.PWM(b_pin, 500)
+		
+		print("setting initial light")
+		self.pwmRed.start(100)
+		self.pwmGreen.start(100)
+		self.pwmBlue.start(100)
+		
+		# Setup GUI Window
+		self.frame = Frame(master) # frame holds the various GUI Controls
+		self.frame.pack()
+		
+		self.set_window()
+		
+	def random_button(self, ignore=0):
+		"""Randomly changes RGB light color
+		ignore is needed as the physical button sends another input"""
+		
+		if ignore!=0:
+			print("Button Pressed")
+			
+		r_rand = random.uniform(0,100)
+		g_rand = random.uniform(0,100)
+		b_rand = random.uniform(0,100)
+		self.update_red(r_rand)
+		self.update_green(g_rand)
+		self.update_blue(b_rand)
+		#self.red_slider.set(r_rand)
+		#self.green_slider.set(g_rand)
+		#self.blue_slider.set(b_rand)
+		
+	def party(self):
+		"""Changes the colors a bunch over a little time"""
+		for i in range(1, 50):
+			self.random_button()
+			time.sleep(0.1)
+		
+		print("Party is over")
+		
+	def fade(self):
+		color=self.color_radio.get()
+
+		if color=="":
+			print("Please select a color to fade")
+			return		
+		
+		print("Fading", color)
+		fade_dict = {"red":self.update_red, "blue":self.update_blue, "green":self.update_green}
+		for i in range(1, 101):
+			fade_dict[color](i)
+			time.sleep(.01)
+		print("Fade Complete")
+		
+		
+		
+	def set_window(self):
+		"""places labels and sliders"""
+		# Place Sliders
+		self.red_slider = Scale(self.frame, orient=HORIZONTAL,
+				from_=0, to=100, command=self.update_red)
+		self.red_slider.grid(row=0, column=1)
+		self.red_slider.set(100)
+		
+		self.green_slider = Scale(self.frame, orient=HORIZONTAL,
+				from_=0, to=100, command=self.update_green)
+		self.green_slider.grid(row=1, column=1)
+		self.green_slider.set(100)
+		
+		self.blue_slider = Scale(self.frame, orient=HORIZONTAL,
+				from_=0, to=100, command=self.update_blue)
+		self.blue_slider.grid(row=2, column=1)
+		self.blue_slider.set(100)
+		
+		# Place labels
+		red_label = Label(self.frame, text="Red")
+		red_label.grid(row=0, column=0)
+		
+		green_label = Label(self.frame, text="Green")
+		green_label.grid(row=1, column=0)
+		
+		blue_label = Label(self.frame, text="Blue")
+		blue_label.grid(row=2, column=0)
+
+		# GUI Button
+		self.random_gui = Button(self.frame, text="Random", command=self.random_button)
+		self.random_gui.grid(row=3, columnspan=2)
+		
+		# party button
+		party_button = Button(self.frame, text="Party", command=self.party)
+		party_button.grid(row=4, columnspan=2)
+		
+		# Fade button
+		fade = Button(self.frame, text="Fade", command=self.fade)
+		fade.grid(row=5, columnspan=2)
+		
+		# Fade Radio Slider and Var
+		self.color_radio = StringVar()
+		Radiobutton(self.frame, text="Red", variable=self.color_radio, value="red").grid(row=6,column=0)
+		Radiobutton(self.frame, text="Green", variable=self.color_radio, value="green").grid(row=6,column=1)
+		Radiobutton(self.frame, text="Blue", variable=self.color_radio, value="blue").grid(row=6,column=2)
+		
+		
+	def update_red(self, value):
+		self.pwmRed.ChangeDutyCycle(float(value))
+		self.red_slider.set(value)
+		#print("Red set to", value)
+		
+	def update_green(self, value):
+		self.pwmGreen.ChangeDutyCycle(float(value))
+		self.green_slider.set(value)
+		#print("Green set to", value)
+		
+	def update_blue(self, value):
+		self.pwmBlue.ChangeDutyCycle(float(value))
+		self.blue_slider.set(value)
+		#print("Blue set to", value)
+
+		
+		
+
+
+def set_window_start(root):
+	"""sets where the window will open"""
+	ws = root.winfo_screenwidth() # gets width of screen
+	hw = root.winfo_screenheight() # gets height of screen
+	
+	# I want it to open in the bottom left
+	x = 3.0*ws/4
+	y = ws/3.0
+	
+	# set (width, height, x, y)
+	root.geometry( '%dx%d+%d+%d' % (300, 300, x, y) ) 
+
+if __name__=='__main__':
+	root = Tk()
+	set_window_start(root) # sets where the window will open
+	root.wm_title("Light Control")
+	RPIN = 14
+	GPIN = 15
+	BPIN = 18
+	app = LightApp(root, RPIN, GPIN, BPIN)
+	try:
+		root.mainloop()
+	finally:
+		print("\nCleaning Up")
+		GPIO.cleanup()
