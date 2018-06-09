@@ -3,9 +3,24 @@ from flask import Flask, render_template, flash, request, sessions, abort
 app = Flask(__name__)
 
 # root route
-@app.route("/")
+@app.route("/", methods=["GET"])
 def index():
+	# Now we pull the command
+	command = request.args['command']
+	print("Command is:", command)
+	
 	return render_template("index.html") # automatically looks in Templates
+	
+# Test JQuery
+@app.route("/command")
+def btn():
+	s = request.headers.get("command")
+	print("Got", s)
+	d = request.args
+	for k in d.keys():
+		print("\t", k)
+	return render_template("index.html") 
+
 	
 	
 # Test link

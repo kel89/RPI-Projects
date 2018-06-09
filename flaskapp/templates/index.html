@@ -4,11 +4,64 @@
 	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/style1.css') }}">
 	<title>Flask Test</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-
+	
+	<!-- Jquery -->
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+	<script>window.jQuery || document.write(
+		'<script src="{{url_for('static', filename='jquery.js') }}">\x3C/script>')</script>
+		
+		
+	<style>
+	body{
+		background = #E1E8EA
+		color = white
+	}
+	
+	.controls{
+			width: 150px;
+			font-size: 32pt;
+			text-align: center;
+			padding: 15px;
+			background-color: #44C9E8;
+			color: white;
+	}
+	
+	.blue_slider{
+		width: 50%;
+		height: 25px;
+		background: #d3d3d3;
+		opacity: 0.7;
+		rotate: 270deg;
+	}
+	
+	</style>
+	
+	
+	
+	<script>
+	function sendCommand(command) {
+		$.get("/", {"command":command})
+	}
+	</script>
 </head>
 
 <body>
 <h1>Test Template</h1>
+
+<h2>Test Ajax</h2>
+<button onclick="sendCommand('pressed')" class="controls">Press this to test</button>
+
+<h2>Ajax slider test</h2>
+<input type="range" min="1" max="100" value="50" id="slider" class="blue_slider">
+<p>Value: <span id="sval"></span></p>
+<script>
+var slider = document.getElementById("slider")
+var dis = document.getElementById("sval")
+slider.oninput = function() {
+	sendCommand(slider.value)
+	dis.innerHTML = slider.value
+}
+</script>
 
 <h1>Test Button Link</h1>
 <a href="/test" class="controls">test</a>
