@@ -115,13 +115,13 @@
 		<h1>Other Controlls</h1>
 		<div class="row" style="margin-top:20px; margin-bottom:25px">
 			<div class="col-xs-4" style="font-size:150%">Brightness</div>
-			<div class="col-xs-8"><input type="range" min="0" max="100" value="0" onchange="sendCommand('Bright:'+this.value)"></div>
+			<div class="col-xs-8"><input type="range" min="1" max="100" value="0" onchange="sendCommand('Bright:'+this.value)"></div>
 		</div>
 
 		<div class='row'>
-			<div class="col-xs-4"><button class="btn-large btn-primary" style="width:100px; height:75px" onclick="sendCommand('Fade')">Fade</button></div>
-			<div class="col-xs-4"><button class="btn-large btn-success" style="width:100px; height:75px" onclick="sendCommand('Jump')"">Jump</button></div>
-			<div class="col-xs-4"><button class="btn-large btn-danger" style="width:100px; height:75px" onclick="sendCommand('Off')"">Off</button></div>
+			<div class="col-xs-4"><button class="btn-large btn-primary" style="width:100px; height:75px" onclick="sendCommand('fade')">Fade</button></div>
+			<div class="col-xs-4"><button class="btn-large btn-success" style="width:100px; height:75px" onclick="sendCommand('jump')"">Jump</button></div>
+			<div class="col-xs-4"><button class="btn-large btn-danger" style="width:100px; height:75px" onclick="sendCommand('off')"">Off</button></div>
 		</div>
 
 		
