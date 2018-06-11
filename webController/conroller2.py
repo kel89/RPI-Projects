@@ -42,6 +42,9 @@ def get_cmd():
 		cmd = None
 	return cmd
 
+# Create light thread
+lt = lightThread()
+
 # root route
 @app.route("/", methods=["GET"]) # get so it can handle jquery
 def index():
@@ -50,13 +53,41 @@ def index():
 	print(cmd)
 	
 	# Change to pre-specified color
-	if cmd in colors.keys():
-		change_color(cmd)
+	if cmd in lt.colors.keys():
+		lt.change_color(cmd)
+		
+	# RGB Sliders
+	if cmd is not None:
+		if cmd[0:2]=="R:":
+			lt.update_light("red", lt.rgb_to_pct(int(cmd[2:]))) # update red
+		elif cmd[0:2]=="G:":
+			lt.update_light("green", lt.rgb_to_pct(int(cmd[2:]))) # update green
+		elif cmd[0:2]=="B:":
+			lt.update_light("blue", lt.rgb_to_pct(int(cmd[2:]))) # update blue
+			
+	# Start Jumping
+	if cmd == "jump":
+		lt.run_jump()
+		
+	# Jump speed change
+	if cmd is not None:
+		if cmd[0:6] == "Speed:":
+			new_speed = int(cmd[6:])
+			lt.jump_pause = 15.0/new_speed
+			print("Jump speed changed")
+			
+	# Turn lights off
+	if cmd == "off":
+		lt.quit() # turns off light, and stops jumping
+		
+		
+	return render_template("index.html")
 
 
 if __name__ == "__main__":
 	# Run the app
 	app.run(debug=True, host="0.0.0.0", use_reloader=False, threaded=True)
+	
 
 	# Runs when the server is stopped (ctr + c)
 	print("\n\n")

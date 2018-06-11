@@ -63,6 +63,7 @@
 
 </head>
 
+<br>
 
 <div class="container-fluid">
 	<div class="jumbotron">
@@ -115,7 +116,11 @@
 		<h1>Other Controlls</h1>
 		<div class="row" style="margin-top:20px; margin-bottom:25px">
 			<div class="col-xs-4" style="font-size:150%">Brightness</div>
-			<div class="col-xs-8"><input type="range" min="1" max="100" value="0" onchange="sendCommand('Bright:'+this.value)"></div>
+			<div class="col-xs-8"><input type="range" min="1" max="100" value="1" onchange="sendCommand('Bright:'+this.value)"></div>
+		</div>
+		<div class="row" style="margin-top:20px; margin-bottom:25px">
+			<div class="col-xs-4" style="font-size:150%">Speed</div>
+			<div class="col-xs-8"><input type="range" min="1" max="100" value="50" onchange="sendCommand('Speed:'+this.value)"></div>
 		</div>
 
 		<div class='row'>

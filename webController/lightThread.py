@@ -10,11 +10,17 @@ background with Flask, so it can run on a constant loop and the program
 can still take jquery updates
 """
 
+import RPi.GPIO as GPIO
+import time
+import random
+import threading
+
 class lightThread(threading.Thread):
 	def __init__(self):
 		# Main initializers
 		threading.Thread.__init__(self)
 		self.kill = False
+		self.jump_pause = 0.5 # starting speed (pause down, speed up)
 
 		# GPIO initialization
 		RPIN = 18
@@ -58,7 +64,7 @@ class lightThread(threading.Thread):
 		"""
 		Takes in a color (as a string) and a new RGB value
 		"""
-		col_map = {"red", self.redPwr, "green":self.greenPwr, "blue":self.bluePwr}
+		col_map = {"red":self.redPwr, "green":self.greenPwr, "blue":self.bluePwr}
 		if color not in list(col_map.keys()):
 			raise ValueError("Please choose a valide color to change")
 		else:
@@ -71,30 +77,31 @@ class lightThread(threading.Thread):
 		changes light color according to the command
 		"""
 		# get color code
-		rgb = colors[cmd]
+		rgb = self.colors[cmd]
 		
 		# map to duties
-		duty = [rgb_to_pct(x) for x in rgb]
+		duty = [self.rgb_to_pct(x) for x in rgb]
 		
-		update_color("red", duty[0])
-		update_color("green", duty[1])
-		update_color("blue", duty[2])
+		self.update_light("red", duty[0])
+		self.update_light("green", duty[1])
+		self.update_light("blue", duty[2])
 		print("color updated")
 
-	def light_off():
+	def light_off(self):
 		"""turns light off"""
 		for c in ["red", "green", "blue"]:
-			self.update_color(c, 0)
+			self.update_light(c, 0)
 	
 	def run_jump(self):
-		num_colors = len(colors.keys())
-		keys = list(colors.keys())
+		self.kill = False # it is okay to jump now
+		num_colors = len(self.colors.keys())
+		keys = list(self.colors.keys())
 		i = 0
 		while not self.kill:
 			color = keys[i]
 			print("Trying to change color to", color)
-			change_color(color)
-			time.sleep(0.5)
+			self.change_color(color)
+			time.sleep(self.jump_pause)
 			i = (i + 1)%num_colors
 			
 	def quit(self):
