@@ -52,7 +52,9 @@ class lightThread(threading.Thread):
 						"purple":[138,43,226],
 						"pink":[255,105,180],
 						"springgreen":[0,255,127],
-						"turquoise":[64,224,208]}
+						"turquoise":[64,224,208],
+						"off":[0,0,0],
+						"white":[255,255,255]}
 
 	def rgb_to_pct(self, rgb):
 		"""
