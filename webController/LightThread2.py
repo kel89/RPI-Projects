@@ -34,6 +34,13 @@ to thinking about jumping:
 	- If another button hit, (like a color, or fade), stop the jumping
 	- When, stopped, determine how to send RGB code back to app, and through
 		to the html so it shows up in the slider
+Now, if the user selects a new color, or moves the slider, before hitting
+the stop jump button, we need to stop the jumping, withough adjusting the sliders.
+with the `keep_jumping` options, we can simply OMIT them in the call from the 
+app. This way, if a slider is adjusted, or a button pressed in the app, automatically
+keep_jumping will be False, and the jumping will stop. (We can do something
+similar for the fading when we get that figured out)
+
 """
 
 """
@@ -83,7 +90,11 @@ class LightThread(threading.Thread):
 		# define dimming constrol
 		# initiliaze to 0.75
 
-	def set_red(self, r):
+		# initliaze for jump
+		jump = False
+		speed = 0.5 # play with this <----------
+
+	def set_red(self, r, keep_jumping=False):
 		"""
 		Changes the red color -- Ultimate function
 
@@ -91,6 +102,10 @@ class LightThread(threading.Thread):
 		----------
 		`r` - is the [0,256] RGB value for the red component
 		"""
+		# if not keep_jumping and jump is True
+		# set jump to false (flip the switch)
+
+
 		# save r as rSet (as still RGB number)
 		# make [0,100] with (r/255)*100
 		# make rPwr = dim*^^val
@@ -106,18 +121,61 @@ class LightThread(threading.Thread):
 		# however note that this time it will have a new dim
 		# Do this for all the colors
 
-	def to_color(self, color):
+	def to_color(self, color, keep_jumping=False):
 		"""
 		Changes the lights to `color`, where `color` is a string
 		that *Must* be in COLORS
 		"""
+		# if not keep_jumping AND jump is True
+		# i.e. we don't want to keep jumping but we currently are
+		# set jump to false
+
 		# Check that color is acceptable, if not...just print?
 		vals = self.COLORS[color]
-		self.set_red(vals[0])
-		self.set_green(vals[1])
-		self.set_blue(vals[2])
+		self.set_red(vals[0], keep_jumping)
+		self.set_green(vals[1], keep_jumping)
+		self.set_blue(vals[2], keep_jumping)
+
+	def start_jump(self):
+		"""
+		Starts and controls jumping for lights
+		-------
+		UPDATE THIS WHEN IT IS WRITTEN/PSUEDO CODE DONE
+		"""
+
+		# set swtich to on
+		jump = True
+
+		# Start jumping loop
+		while jump:
+			# choose a random color from the dictionary
+			# change to that color with to_color (with keep_jumping=True)
+			# wait according to the speed timer <-------------- requires tweaking
 
 
+	def stop_jump(self):
+		"""
+		Stops the jumping -- to be called when the button is explicitly
+		hit to stop the jumping
+		-------
+		UPDATE THIS WHEN IT IS WRITTEN/PSUEDO CODE DONE
+		"""
+
+		# flip the jump switch
+		jump = False 
+
+		# Now get the current color, in RGB form and return it as a dictionary
+		# so that it can be sent JQURY style to update the sliders
+		current = {
+			"red":str(self.rSet),
+			"green":str(self.gSet),
+			"blue":str(self.bSet)
+		}
+		return current
+		# Note, this will require the html/js to be updated so that the jump
+		# button is bound to a getJSON
+
+	NOW THING ABOUT FADING
 
 
 
