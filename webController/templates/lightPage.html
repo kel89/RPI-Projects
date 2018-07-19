@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Light Controller</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<!-- Jquery -->
+	<!--
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+	<script>window.jQuery || document.write(
+		'<script src="{{url_for('static', filename='jquery.js') }}">\x3C/script>')</script>
+	-->
+
+
+	<!-- Latest compiled and minified CSS -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
+	<!-- jQuery library --> <!--This one is for bootstrap, test it with other -->
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+	<!-- Latest compiled JavaScript -->
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js">
+	</script>
+
+	<!-- Very important, little js script to send command via Jquery GET -->
+	<script>
+	function sendCommand(command) {
+		$.get("/", {"command":command})
+	}
+	
+	var COLORS = {
+		"blue" : [0,0,255],
+		"red" : [255, 0, 0],
+		"green" : [0, 255, 0],
+		"yellow" : [255, 255, 0],
+		"orange" : [255, 13, 0],
+		"purple" : [138, 43, 226],
+		"pink" : [255, 0, 200],
+		"springgreen" : [0, 255, 127],
+		"turquoise" : [64, 224, 208],
+		"off" : [0,0,0]
+	}
+	
+	function changeSliders(color){
+		// Changes the slider positions based on input color
+		
+		var redSlider = document.getElementById("RedSlider");
+		var greenSlider = document.getElementById("GreenSlider");
+		var blueSlider = document.getElementById("BlueSlider");
+		
+		redSlider.value = COLORS[color][0];
+		greenSlider.value = COLORS[color][1];
+		blueSlider.value = COLORS[color][2];
+	}
+	
+	function buttonChangeColor(color){
+		// Called when a present color button is hit
+		// Sends command to server to change the light color
+		// uses JS to change the slider values
+		sendCommand("Color:" + color);
+		changeSliders(color);
+	}
+	
+	</script>
+
+	<style>
+		.colorSlider{
+			width : 75%;
+			height : 15px;
+			border-radius : 5px; 
+			background: #d3d3d3;
+		    outline : none;
+		    opacity : 0.7;
+		    -webkit-transition : .2s;
+		    transition: opacity : .2s;
+
+		}
+
+		.colorSlider::-webkit-slider-thumb {
+		    -webkit-appearance: none;
+		    appearance: none;
+		    width: 25px;
+		    height: 25px;
+		    border-radius: 50%; 
+		    background: #4CAF50;
+		    cursor: pointer;
+		}
+
+		.colorSlider::-moz-range-thumb {
+		    width: 25px;
+		    height: 25px;
+		    border-radius: 50%;
+		    background: #4CAF50;
+		    cursor: pointer;
+		}
+	</style>
+
+</head>
+
+<br>
+
+<div class="container-fluid">
+	<div class="jumbotron">
+		<h1>RGB Light Strip Controller</h1>
+		<p>Choose colors and commands
+		</p>
+	</div>
+
+	<h1>Colors</h1>
+	<p>This is where we will put a grid of color boxes</p>
+
+	<div class="row" style="margin-top:20px; margin-bottom:25px">
+		<!-- Do rows of 4 button, don't worry they stack if window too small -->
+		<div class="col-xs-4"> <button class="btn" style="background-color: red; height:75px; width:75px" onclick="buttonChangeColor('red')"></button> </div>
+		<div class="col-xs-4"> <button class="btn" style="background-color: blue; height:75px; width:75px" onclick="buttonChangeColor('blue')"></button> </div>
+		<div class="col-xs-4"> <button class="btn" style="background-color: green; height:75px; width:75px" onclick="buttonChangeColor('green')"></button> </div>
+	</div>
+	<div class="row" style="margin-top:20px; margin-bottom:25px">
+		<div class="col-xs-4"> <button class="btn" style="background-color: yellow; height:75px; width:75px" onclick="buttonChangeColor('yellow')"></button> </div>
+		<div class="col-xs-4"> <button class="btn" style="background-color: orange; height:75px; width:75px" onclick="buttonChangeColor('orange')"></button> </div>
+		<div class="col-xs-4"> <button class="btn" style="background-color: #8B15EE; height:75px; width:75px" onclick="buttonChangeColor('purple')"></button></div>
+	</div>
+	<div class="row" style="margin-top:20px; margin-bottom:25px">
+		<div class="col-xs-4"> <button class="btn" style="background-color: hotpink; height:75px; width:75px" onclick="buttonChangeColor('pink')"></button> </div>
+		<div class="col-xs-4"> <button class="btn" style="background-color: springgreen; height:75px; width:75px" onclick="buttonChangeColor('springgreen')"></button> </div>
+		<div class="col-xs-4"> <button class="btn" style="background-color: turquoise; height:75px; width:75px" onclick="buttonChangeColor('turquoise')"></button></div>
+	</div>
+
+	<div class="container-fluid">
+		<h1>RGB Selector</h1>
+		<div class="row" style="margin-top:20px; margin-bottom:25px">
+			<div class="col-xs-3" style="color:red; font-size:150%">Red</div>
+			<div class="col-xs-9"><input type="range"  id="RedSlider" min="0" max="255" value="0" onchange="sendCommand('R:'+this.value)"></div>
+			<div class="col-xs-2"><span id="rv"></span></div>
+		</div>
+		<div class="row" style="margin-top:20px; margin-bottom:25px">
+			<div class="col-xs-3" style="color:green; font-size:150%">Green</div>
+			<div class="col-xs-9"><input type="range" id="GreenSlider" min="0" max="255" value="0" onchange="sendCommand('G:'+this.value)"></div>
+			<div class="col-xs-2"><span id="rv"></span></div>
+		</div>
+		<div class="row" style="margin-top:20px; margin-bottom:25px">
+			<div class="col-xs-3" style="color:blue; font-size:150%">Blue</div>
+			<div class="col-xs-9"><input type="range" id="BlueSlider" min="0" max="255" value="0" onchange="sendCommand('B:'+this.value)"></div>
+		</div>
+		
+	</div>
+
+
+	<div class="container-fluid">
+		<h1>Other Controlls</h1>
+		<div class="row" style="margin-top:20px; margin-bottom:25px">
+			<div class="col-xs-4" style="font-size:150%">Brightness</div>
+			<div class="col-xs-8"><input type="range" min="0" max="1" value="0.75" step="0.01" onchange="sendCommand('Bright:'+this.value)"></div>
+		</div>
+		<div class="row" style="margin-top:20px; margin-bottom:25px">
+			<div class="col-xs-4" style="font-size:150%">Speed</div>
+			<div class="col-xs-8"><input type="range" min="0" max="1" value="0.5" step="0.01" onchange="sendCommand('Speed:'+this.value)"></div>
+		</div>
+
+		<div class='row'>
+			<div class="col-xs-3"><button class="btn-large btn-primary" style="width:100px; height:75px; font-size:150%" onclick="sendCommand('fade')">Fade</button></div>
+			<div class="col-xs-3"><button class="btn-large btn-success" style="width:100px; height:75px; font-size:150%" onclick="sendCommand('jump')">Jump</button></div>
+			<div class="col-xs-3"><button class="btn-large btn-secondary" style="width:100px; height:75px; font-size:150%" onclick="sendCommand('stop')">Stop</button></div>
+			<div class="col-xs-3"><button class="btn-large btn-danger" style="width:100px; height:75px; font-size:150%" onclick="buttonChangeColor('off')">Off</button></div>
+		</div>
+
+		
+
+	</div>
+
+	<br>
+	<br>
+
+</head>
+</html>
