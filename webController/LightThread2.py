@@ -91,9 +91,9 @@ class LightThread(threading.Thread):
 		GPIO.setup(BPIN, GPIO.OUT)
 
 		# Set frequency
-		self.rPwr = GPIO.PWM(RPIN, 1000)
-		self.bPwr = GPIO.PWM(BPIN, 1000)
-		self.gPwr = GPIO.PWM(GPIN, 1000)
+		self.rPwr = GPIO.PWM(RPIN, 500)
+		self.bPwr = GPIO.PWM(BPIN, 500)
+		self.gPwr = GPIO.PWM(GPIN, 500)
 
 		# Start lights off
 		self.rPwr.start(0)
@@ -127,6 +127,8 @@ class LightThread(threading.Thread):
 			"yellow", "red", "pink", "purple"
 		]
 		
+		# For test with smaller set of colors
+		# self.ORDERED_COLORS = ["red", "pink", "blue"]
 
 		# define dimming constrol
 		# initiliaze to 0.75
@@ -136,6 +138,7 @@ class LightThread(threading.Thread):
 		self.jump = False
 		self.fade = False
 		self.speed = 0.5 # play with this <----------
+		self.last_jump = None # color of last jump
 
 	def set_red(self, r, keep_jumping=False, keep_fading=False):
 		"""
@@ -290,11 +293,15 @@ class LightThread(threading.Thread):
 		# Start jumping loop
 		while self.jump:
 			# choose a random color from the dictionary
-			new_color = random.choice(list(set(list(self.COLORS.keys())) - set("off")))
+			new_color = random.choice(list(self.COLORS.keys()))
 			
+			# Make sure not going to 'off'
+			while new_color == "off" or new_color == self.last_jump:
+				new_color = random.choice(list(self.COLORS.keys()))
 			
 			# change to that color with to_color (with keep_jumping=True)
 			self.to_color(new_color, keep_jumping=True)
+			self.last_jump = new_color
 			
 			# Pause based on speed parameter
 			time.sleep(.2/self.speed) # so 1 second pause with default speed=2
@@ -311,6 +318,7 @@ class LightThread(threading.Thread):
 		# flip the jump switch
 		self.jump = False 
 		self.fade = False
+		self.last_jump = None
 
 		# Now get the current color, in RGB form and return it as a dictionary
 		# so that it can be sent JQURY style to update the sliders
@@ -340,33 +348,30 @@ class LightThread(threading.Thread):
 
 		# find max number of steps
 		r_steps = self.COLORS[c2][0] - self.COLORS[c1][0]
-		print("red steps:", r_steps)
+		# print("red steps:", r_steps)
 		g_steps = self.COLORS[c2][1] - self.COLORS[c1][1]
-		print("green steps:", g_steps)
+		# print("green steps:", g_steps)
 		b_steps = self.COLORS[c2][2] - self.COLORS[c1][2]
-		print("blue_steps:", b_steps)
+		# print("blue_steps:", b_steps)
 		max_steps = max(max(abs(r_steps), abs(g_steps), abs(b_steps)), 1) # no division by 0 later
-		print("Max steps are:", max_steps)
+		# print("Max steps are:", max_steps)
 
 		# get time between each step
-		time_between = (10/max_steps)*(2*self.speed) # gives 10 seconds per fade
-		print("Total time for fade should be", time_between*max_steps)
-		# time_between = (3*self.speed) # should be independent of max_steps?
-		# when speed = 0.5. Therefore can tweak 10 and 2 in tuning for looks
+		time_between = (10/max_steps)*(.1/self.speed) # gives 10 seconds per fade
+		# print("Total time for fade should be", time_between*max_steps)
 
 		# set step sizes for each color
 		r_delta = r_steps/max_steps
-		print("r delta", r_delta)
+		# print("r delta", r_delta)
 		g_delta = g_steps/max_steps
-		print("g delta", g_delta)
+		# print("g delta", g_delta)
 		b_delta = b_steps/max_steps
-		print("b delta", b_delta)
+		# print("b delta", b_delta)
 
 		# Start the fade loop
 		i = 0
 		# print("value of fade switch in fade function is", self.fade)
 		while i < max_steps and self.fade is True:
-			# print("taking a fade step")
 			i += 1 # increment loop
 
 			# change color
@@ -375,7 +380,6 @@ class LightThread(threading.Thread):
 			self.set_blue(self.bSet + b_delta, keep_fading=True)
 
 			# pause
-			time_between = 0.01 # this is to speed it up
 			time.sleep(time_between)
 
 
