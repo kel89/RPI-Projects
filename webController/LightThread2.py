@@ -53,6 +53,7 @@ two colors, and it will use the `speed` attribute;
 
 
 import RPi.GPIO as GPIO
+import pigpio # superior as uses better timing (no flicker)
 import time
 import random
 import threading
@@ -80,25 +81,31 @@ class LightThread(threading.Thread):
 		threading.Thread.__init__(self)
 		
 		# GPIO initialization
-		RPIN = 18
-		GPIN = 23
-		BPIN = 24
+		self.RPIN = 18
+		self.GPIN = 23
+		self.BPIN = 24
 
 		# Setup GPIO
-		GPIO.setmode(GPIO.BCM)
-		GPIO.setup(RPIN, GPIO.OUT)
-		GPIO.setup(GPIN, GPIO.OUT)
-		GPIO.setup(BPIN, GPIO.OUT)
+		#GPIO.setmode(GPIO.BCM)
+		#GPIO.setup(RPIN, GPIO.OUT)
+		#GPIO.setup(GPIN, GPIO.OUT)
+		#GPIO.setup(BPIN, GPIO.OUT)
+		self.pi = pigpio.pi()
 
-		# Set frequency
-		self.rPwr = GPIO.PWM(RPIN, 500)
-		self.bPwr = GPIO.PWM(BPIN, 500)
-		self.gPwr = GPIO.PWM(GPIN, 500)
+		## Set frequency
+		#self.rPwr = GPIO.PWM(RPIN, 300)
+		#self.bPwr = GPIO.PWM(BPIN, 300)
+		#self.gPwr = GPIO.PWM(GPIN, 300)
 
-		# Start lights off
-		self.rPwr.start(0)
-		self.bPwr.start(0)
-		self.gPwr.start(0)
+		## Start lights off
+		#self.rPwr.start(0)
+		#self.bPwr.start(0)
+		#self.gPwr.start(0)
+		
+		# set colors to 0 to start
+		self.pi.set_PWM_dutycycle(self.RPIN, 0)
+		self.pi.set_PWM_dutycycle(self.GPIN, 0)
+		self.pi.set_PWM_dutycycle(self.BPIN, 0)
 
 		# Initialize 0-255 light attributes
 		self.rSet = 0
@@ -165,10 +172,13 @@ class LightThread(threading.Thread):
 		self.rSet = r
 
 		# map [0,100] -> [0,255]
-		rgb_val = int((r/255)*100)
+		#rgb_val = int((r/255)*100)
 		
 		# Set light power (including dimmer)
-		self.rPwr.ChangeDutyCycle(self.dim*rgb_val)
+		#self.rPwr.ChangeDutyCycle(self.dim*rgb_val)
+		
+		# Change red duty cycle
+		self.pi.set_PWM_dutycycle(self.RPIN, self.dim*r)
 		
 	def set_green(self, g, keep_jumping=False, keep_fading=False):
 		"""
@@ -196,10 +206,13 @@ class LightThread(threading.Thread):
 		self.gSet = g
 
 		# map [0,100] -> [0,255]
-		rgb_val = int((g/255)*100)
+		#rgb_val = int((g/255)*100)
 		
 		# Set light power (including dimmer)
-		self.gPwr.ChangeDutyCycle(self.dim*rgb_val)
+		#self.gPwr.ChangeDutyCycle(self.dim*rgb_val)
+		
+		# Set green duty cycle
+		self.pi.set_PWM_dutycycle(self.GPIN, self.dim*g)
 
 	
 	def set_blue(self, b, keep_jumping=False, keep_fading=False):
@@ -228,10 +241,13 @@ class LightThread(threading.Thread):
 		self.bSet = b
 
 		# map [0,100] -> [0,255]
-		rgb_val = int((b/255)*100)
+		#rgb_val = int((b/255)*100)
 		
 		# Set light power (including dimmer)
-		self.bPwr.ChangeDutyCycle(self.dim*rgb_val)
+		#self.bPwr.ChangeDutyCycle(self.dim*rgb_val)
+		
+		# Set blue duty cycle
+		self.pi.set_PWM_dutycycle(self.BPIN, self.dim*b)
 		
 		
 	def set_dim(self, new_dim):
